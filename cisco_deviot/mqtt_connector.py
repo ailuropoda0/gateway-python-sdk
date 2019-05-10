@@ -13,7 +13,7 @@
 
 import json
 import threading
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 import time
 from paho.mqtt.client import Client

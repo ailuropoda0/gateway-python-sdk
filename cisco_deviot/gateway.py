@@ -11,7 +11,7 @@
 # under the License.
 
 
-import httplib
+import http.client
 import threading
 import time
 import json
@@ -19,10 +19,10 @@ import importlib
 import socket
 import collections
 
-from urlparse import urlparse
+from urllib.parse import urlparse
 from cisco_deviot import logger
-from mqtt_connector import MqttConnector
-from thing import Thing
+from .mqtt_connector import MqttConnector
+from .thing import Thing
 
 from enum import EnumMeta
 
@@ -42,9 +42,9 @@ class Gateway:
             deviot_server = "https://" + deviot_server
         self.deviot_server = urlparse(deviot_server)
         if self.deviot_server.scheme == 'http':
-            self.__connection = httplib.HTTPConnection(self.deviot_server.netloc)
+            self.__connection = http.client.HTTPConnection(self.deviot_server.netloc)
         else:
-            self.__connection = httplib.HTTPSConnection(self.deviot_server.netloc)
+            self.__connection = http.client.HTTPSConnection(self.deviot_server.netloc)
         self.mode = Mode.MQTT
         self.things = {}
         self.__registration_started = False
@@ -66,7 +66,7 @@ class Gateway:
 
     def __del_none(self, d):
         if isinstance(d, dict):
-            for key, value in d.items():
+            for key, value in list(d.items()):
                 if value is None:
                     del d[key]
                 else:
@@ -201,7 +201,7 @@ class Gateway:
                 logger.warn("thing {thing} is not registered".format(thing=thing))
 
     def get_data(self):
-        return {key: value.get_data() for (key, value) in self.things.items()}
+        return {key: value.get_data() for (key, value) in list(self.things.items())}
 
     def send_data(self, data):
         if self.connector.is_connected:
@@ -262,7 +262,7 @@ class Gateway:
                                          ("port", self.port),
                                          ("data", self.data),
                                          ("action", self.action),
-                                         ("sensors", [thing.get_model() for thing in self.things.values()])])
+                                         ("sensors", [thing.get_model() for thing in list(self.things.values())])])
         return json.dumps(self.__del_none(model), sort_keys=False)
         
     def __str__(self):

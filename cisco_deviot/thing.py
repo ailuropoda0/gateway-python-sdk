@@ -144,7 +144,7 @@ class Thing:
         if action_model.need_payload:
             valid_args["payload"] = True
 
-        for k in args.keys():
+        for k in list(args.keys()):
             if k not in valid_args:
                 del args[k]
         action_method.__call__(**args)
